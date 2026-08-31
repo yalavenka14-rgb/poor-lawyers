@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивный академический справочник: Гражданское право Республики Беларусь</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FDFBF7',
+                        academic: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        amberAccent: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            700: '#b45309',
+                        },
+                        indigoAccent: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 550px;
+            height: 320px;
+            max-height: 380px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<!-- Chosen Palette: Amber & Slate Academic - Warm Neutral Background (#FDFBF7), Deep Slate/Navy Headers (#1E293B / #312E81), Soft Gold & Blue Accents (#F59E0B / #4338CA). High contrast, calming for long reading sessions. -->
+<!-- Application Structure Plan: Designed as an Interactive Academic Study Portal & Dashboard for Civil Law Exam Prep (Belarus). Structure includes: 1. Header with dynamic search and bookmark counter. 2. Exam Analytics & Key Timeframes Dashboard (Chart.js stats + interactive deadline quick-reference). 3. Categorized Institutional Tabs (General Part, Property Rights, Obligations & Contracts, Torts & Inheritance). 4. Comprehensive Accordion-like Explorer with deep textual analysis, exact article badges (ГК РБ), and integrated comparative HTML tables. 5. Flashcard/Self-Assessment Mode for rapid revision before exams. Why: Replaces static 30-question text dumps with active visual learning, cross-referencing, and progress tracking. -->
+<!-- Visualization & Content Choices: 1. Questions Breakdown -> Goal: Overview -> Doughnut Chart (Chart.js) -> Canvas. 2. Critical Civil Deadlines -> Goal: Comparison -> Horizontal Bar Chart (Chart.js) -> Canvas. 3. Legal Structures & Comparison Tables -> Goal: Organize & Compare -> Styled HTML/Tailwind Responsive Tables -> NO SVG/Mermaid. 4. Interactive Bookmarks & Flashcard Mode -> Goal: Retention -> Vanilla JS State Management. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<body class="bg-cream text-academic-800 font-sans antialiased min-h-screen flex flex-col custom-scrollbar">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-academic-900 text-white shadow-md border-b border-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">⚖️</span>
+                    <div>
+                        <h1 class="text-lg font-bold tracking-tight text-white font-serif">Гражданское право Беларуси</h1>
+                        <p class="text-xs text-amber-300 font-medium">Академический курс БГУ / БГЭУ • 30 экзаменационных вопросов</p>
+                    </div>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white text-2xl focus:outline-none">
+                    ☰
+                </button>
+            </div>
+
+            <!-- Global Search and Quick Actions -->
+            <div class="flex items-center space-x-3 w-full md:w-auto">
+                <div class="relative w-full md:w-72">
+                    <input type="text" id="search-input" placeholder="Поиск (статьи, термины, вопросы)..." 
+                        class="w-full pl-9 pr-4 py-1.5 bg-slate-800 text-slate-100 placeholder-slate-400 text-sm rounded-lg border border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+                    <span class="absolute left-2.5 top-2 text-slate-400 text-sm">🔍</span>
+                </div>
+                <button id="view-bookmarks-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 rounded-lg text-xs font-semibold flex items-center shrink-0 transition-colors">
+                    <span class="mr-1.5">⭐</span> Избранное <span id="bookmark-count" class="ml-1.5 bg-amber-500 text-academic-900 px-1.5 py-0.2 rounded-full text-[10px] font-bold">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+        <!-- Intro Banner & Dashboard Toggle -->
+        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div class="space-y-2 max-w-3xl">
+                    <div class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amberAccent-100 text-amberAccent-700 border border-amber-200">
+                        <span>🎓 Экспресс-подготовка к экзамену</span>
+                    </div>
+                    <h2 class="text-2xl font-bold font-serif text-academic-900">Доктринально-нормативный комплекс гражданского права РБ</h2>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Данный интерактивный портал содержит полную системную выжимку нормативных положений Гражданского кодекса Республики Беларусь, специализированных кодексов (ЗК РБ, ЖK РБ) и доктринальных подходов ведущих юридических кафедр. Используйте навигацию по разделам, фильтрацию по ключевым статьям, сравнительные таблицы и визуализаторы сроков.
+                    </p>
+                </div>
+                <div class="flex flex-wrap lg:flex-col gap-2 shrink-0 justify-end">
+                    <button id="toggle-dashboard-btn" class="px-4 py-2 bg-indigoAccent-50 hover:bg-indigoAccent-100 text-indigoAccent-700 font-medium text-xs rounded-xl border border-indigoAccent-100 transition-colors flex items-center justify-center space-x-2">
+                        <span>📊</span> <span id="dash-btn-text">Скрыть аналитику</span>
+                    </button>
+                    <button id="mode-flashcards-btn" class="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amberAccent-700 font-medium text-xs rounded-xl border border-amber-200 transition-colors flex items-center justify-center space-x-2">
+                        <span>🗂️</span> <span>Режим карточек (Самопроверка)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Collapsible Analytics Dashboard -->
+            <div id="analytics-dashboard" class="mt-6 pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-300">
+                <!-- Chart 1 Container -->
+                <div class="bg-academic-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Структура вопросов экзамена</h3>
+                        <p class="text-xs text-slate-600 mb-3">Распределение 30 вопросов по ключевым правовым институтам</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2 Container -->
+                <div class="bg-academic-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Сравнение ключевых сроков ГК РБ</h3>
+                        <p class="text-xs text-slate-600 mb-3">Пресекательные, давностные и процедурные интервалы</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="deadlinesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Quick Legal Timeframes Reference Widget -->
+                <div class="bg-academic-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">⏱️ Шпора ключевых сроков РБ</h3>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                                <span class="text-slate-700 font-medium">Безвестное отсутствие</span>
+                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold">1 год</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                                <span class="text-slate-700 font-medium">Объявление умершим (общее)</span>
+                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold">3 года</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                                <span class="text-slate-700 font-medium">Объявление умершим (угроза гибели)</span>
+                                <span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold">6 месяцев</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                                <span class="text-slate-700 font-medium">Общий срок исковой давности</span>
+                                <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded font-bold">3 года</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                                <span class="text-slate-700 font-medium">Обмен качественного товара</span>
+                                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">14 дней</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white p-2 rounded border border-slate-200">
+                                <span class="text-slate-700 font-medium">Принятие наследства / Претензии из перевозки</span>
+                                <span class="px-2 py-0.5 bg-sky-100 text-sky-800 rounded font-bold">6 мес. / 1 год</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 italic mt-3">Примечание: Использование данных сроков является критическим критерием оценки на экзамене.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category Filter Tabs -->
+        <nav class="flex flex-wrap gap-2 border-b border-slate-200 pb-3" id="category-tabs">
+            <button data-cat="all" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-academic-900 text-white shadow-sm transition-all">
+                Все вопросы (1–30)
+            </button>
+            <button data-cat="general" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+                📘 Общая часть (1–13)
+            </button>
+            <button data-cat="property" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+                🏡 Вещное право (14–16)
+            </button>
+            <button data-cat="obligations" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+                📜 Договоры и Обязательства (17–27)
+            </button>
+            <button data-cat="torts_inheritance" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all">
+                ⚖️ Деликты и Наследование (28–30)
+            </button>
+        </nav>
+
+        <!-- Section Introduction Text -->
+        <div id="section-intro" class="bg-indigoAccent-50/60 p-4 rounded-xl border border-indigoAccent-100 text-xs text-indigoAccent-900 leading-relaxed">
+            <!-- Dynamic Introduction Content inserted via JS -->
+        </div>
+
+        <!-- Main Questions Container (Explorer View) -->
+        <section id="questions-list-container" class="space-y-4">
+            <!-- Dynamic Question Cards Inserted via JS -->
+        </section>
+
+        <!-- Flashcards Assessment Mode View (Hidden by default) -->
+        <section id="flashcard-view" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-slate-200 max-w-3xl mx-auto text-center space-y-6">
+                <div class="flex justify-between items-center text-xs text-slate-500 border-b border-slate-100 pb-3">
+                    <span id="fc-progress">Вопрос 1 из 30</span>
+                    <span id="fc-category" class="font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">Общая часть</span>
+                </div>
+                
+                <div class="py-8 min-h-[200px] flex flex-col justify-center items-center">
+                    <span id="fc-num" class="text-xs font-bold text-indigoAccent-700 uppercase tracking-widest mb-2">Вопрос №1</span>
+                    <h3 id="fc-title" class="text-xl font-bold font-serif text-academic-900 max-w-xl">
+                        Понятие и предмет гражданского права как отрасли права
+                    </h3>
+                </div>
+
+                <div id="fc-answer-container" class="hidden text-left bg-slate-50 p-5 rounded-xl border border-slate-200 text-sm space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar">
+                    <div id="fc-answer-text"></div>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-3 pt-4 border-t border-slate-100">
+                    <button id="fc-show-ans-btn" class="px-5 py-2.5 bg-indigoAccent-700 text-white font-semibold text-xs rounded-xl hover:bg-indigoAccent-900 transition-colors shadow-sm">
+                        💡 Показать ответ
+                    </button>
+                    <button id="fc-prev-btn" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl hover:bg-slate-300 transition-colors">
+                        ← Предыдущий
+                    </button>
+                    <button id="fc-next-btn" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl hover:bg-slate-300 transition-colors">
+                        Следующий →
+                    </button>
+                    <button id="fc-exit-btn" class="px-4 py-2.5 bg-rose-50 text-rose-700 border border-rose-200 font-semibold text-xs rounded-xl hover:bg-rose-100 transition-colors">
+                        ✖ Выйти из карточек
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-academic-900 text-slate-400 text-xs py-8 border-t border-slate-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="space-y-1 text-center md:text-left">
+                <p class="font-semibold text-slate-200">Академический комплекс ответов к экзамену по Гражданскому праву РБ</p>
+                <p class="text-slate-500">Составлен на основе Гражданского кодекса Республики Беларусь и программ БГУ / БГЭУ.</p>
+            </div>
+            <div class="text-center md:text-right text-slate-500">
+                <p>Все материалы адаптированы для самоподготовки и повторения.</p>
+                <p class="text-[11px] text-amber-500/80 mt-0.5">Разработано с учетом норм законодательства Республики Беларусь.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Data and Application Logic -->
+    <script>
+        // Database of 30 Civil Law Exam Questions
+        const questionsData = [
+            {
+                id: 1,
+                title: "Понятие и предмет гражданского права как отрасли права",
+                category: "general",
+                articles: ["ст. 1 ГК РБ", "ст. 2 ГК РБ", "ст. 151–153 ГК РБ"],
+                intro: "В данном вопросе раскрывается сущность гражданского права Беларуси как фундаментальной отрасли частного права, регулирующей имущественные и личные неимущественные отношения.",
+                summary: "Гражданское право РБ — отрасль права, регулирующая имущественные и личные неимущественные отношения, основанные на равенстве, автономии воли и имущественной самостоятельности участников.",
+                details: `
+                    <p class="mb-3"><strong>Гражданское право Республики Беларусь</strong> представляет собой базовую отрасль национальной правовой системы, предметом которой выступает совокупность имущественных и неразрывно связанных с ними личных неимущественных отношений, основанных на автономии воли, имущественной самостоятельности и юридическом равенстве их участников.</p>
+                    <p class="mb-3">В цивилистической доктрине ведущих научно-образовательных центров Беларуси (БГУ и БГЭУ) предмет гражданско-правового регулирования структурируется по трем институциональным блокам:</p>
+                    <ul class="list-disc pl-5 mb-4 space-y-1.5 text-xs sm:text-sm">
+                        <li><strong>Имущественные отношения:</strong>
+                            <ul class="list-circle pl-4 mt-1 space-y-1 text-slate-600">
+                                <li><em>Вещные отношения (статика):</em> закрепляют режим принадлежности имущества субъектам (право собственности и ограниченные вещные права).</li>
+                                <li><em>Обязательственные отношения (динамика):</em> регламентируют процессы перехода благ, товаров, работ, услуг и расчетов.</li>
+                                <li><em>Исключительные права:</em> опосредуют оборот объектов интеллектуальной собственности.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Личные неимущественные отношения, связанные с имущественными:</strong> возникают по поводу создания результатов интеллектуального труда (авторские права). Неотчуждаемые личные права образуют фундамент для имущественных прав на использование объектов.</li>
+                        <li><strong>Личные неимущественные отношения, не связанные с имущественными:</strong> неотчуждаемые нематериальные блага (жизнь, здоровье, честь, достоинство, деловая репутация, персональные данные — ст. 151–153 ГК РБ).</li>
+                    </ul>
+                    <p><strong>Метод гражданского права:</strong> характеризуется диспозитивностью, юридическим равенством участников, автономией воли, взаимной имущественной обособленностью и компенсаторно-восстановительным характером ответственности.</p>
+                `
+            },
+            {
+                id: 2,
+                title: "Понятие и элементы гражданского правоотношения",
+                category: "general",
+                articles: ["ст. 128 ГК РБ"],
+                intro: "Раскрываются три обязательных элемента гражданско-правовой связи и классификация гражданских правоотношений по доктрине цивилистики РБ.",
+                summary: "Гражданское правоотношение — юридическая связь субъектов, имеющих взаимные субъективные права и юридические обязанности. Элементы: Субъекты, Объект, Содержание.",
+                hasTable: true,
+                details: `
+                    <p class="mb-3"><strong>Гражданское правоотношение</strong> — это юридическая связь между равноправными, имущественно обособленными субъектами, возникающая на основе норм гражданского законодательства под воздействием юридических фактов.</p>
+                    <p class="mb-3"><strong>Элементная структура включает 3 компонента:</strong></p>
+                    <ol class="list-decimal pl-5 mb-4 space-y-1 text-xs sm:text-sm">
+                        <li><strong>Субъекты:</strong> физические лица (граждане РБ, иностранцы, лица без гражданства), юридические лица, а также Республика Беларусь и ее административно-территориальные единицы.</li>
+                        <li><strong>Объект:</strong> блага материального и нематериального характера (вещи, деньги, ценные бумаги, работы, услуги, информация, исключительные права, нематериальные блага — ст. 128 ГК РБ).</li>
+                        <li><strong>Содержание:</strong> субъективное право (мера дозволенного поведения) и юридическая обязанность (мера должного поведения).</li>
+                    </ol>
+                `,
+                tableHtml: `
+                    <div class="overflow-x-auto mt-3">
+                        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                    <th class="p-2 border-r border-slate-200">Критерий</th>
+                                    <th class="p-2 border-r border-slate-200">Вид правоотношения</th>
+                                    <th class="p-2">Сущностная специфика</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 text-slate-600">
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-medium">Индивидуализация обязанных лиц</td>
+                                    <td class="p-2 border-r border-slate-200">Абсолютные / Относительные</td>
+                                    <td class="p-2">В абсолютных управомоченному лицу противостоит неопределенный круг лиц (собственность); в относительных — круг лиц строго определен (договор).</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-medium">Способ удовлетворения интереса</td>
+                                    <td class="p-2 border-r border-slate-200">Вещные / Обязательственные</td>
+                                    <td class="p-2">В вещных интерес удовлетворяется воздействием на вещь; в обязательственных — через действия должника.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-medium">Функциональная направленность</td>
+                                    <td class="p-2 border-r border-slate-200">Регулятивные / Охранительные</td>
+                                    <td class="p-2">Регулятивные опосредуют нормальный оборот; охранительные активизируются при правонарушении.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            },
+            {
+                id: 3,
+                title: "Понятие дееспособности гражданина и ее виды",
+                category: "general",
+                articles: ["ст. 20 ГК РБ", "ст. 25–29 ГК РБ"],
+                intro: "Вопрос анализирует уровни и условия возникновения гражданской дееспособности физических лиц в зависимости от возраста и состояния психического здоровья.",
+                summary: "Дееспособность (ст. 20 ГК) — способность своими действиями приобретать права и исполнять обязанности. Градации: полная (18 лет / брак / эмансипация ст. 26), неполная (14–18 лет ст. 25), малолетних (<14 лет ст. 27), ограничение (ст. 29), недееспособность (ст. 28).",
+                details: `
+                    <p class="mb-3"><strong>Гражданская дееспособность</strong> — способность гражданина своими действиями приобретать и осуществлять гражданские права, создавать для себя гражданские обязанности и исполнять их (ст. 20 ГК РБ).</p>
+                    <div class="space-y-3 text-xs sm:text-sm">
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <strong class="text-indigoAccent-900">1. Полная дееспособность:</strong>
+                            <p class="mt-1 text-slate-600">Наступает по достижении 18 лет. Вступает до 18 лет при снижении брачного возраста и вступлении в брак, либо при <strong>эмансипации</strong> (с 16 лет при работе по трудовому договору или предпринимательстве — ст. 26 ГК РБ).</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <strong class="text-indigoAccent-900">2. Частичная дееспособность несовершеннолетних от 14 до 18 лет (ст. 25 ГК РБ):</strong>
+                            <p class="mt-1 text-slate-600">Сделки совершаются с согласия родителей. Самостоятельно: распоряжение заработком/стипендией, авторские права, банковские вклады, мелкие бытовые сделки. Несут самостоятельную ответственность (деликтоспособность).</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <strong class="text-indigoAccent-900">3. Дееспособность малолетних до 14 лет (ст. 27 ГК РБ):</strong>
+                            <p class="mt-1 text-slate-600">По общему правилу недееспособны. Исключения: мелкие бытовые сделки; безвозмездное получение выгоды (без нотариата/госрегистрации); распоряжение предоставленными средствами.</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <strong class="text-indigoAccent-900">4. Ограничение дееспособности (ст. 29 ГК РБ):</strong>
+                            <p class="mt-1 text-slate-600">Судом при злоупотреблении алкоголем/наркотиками, ставящем семью в тяжелое материальное положение. Назначается попечитель.</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <strong class="text-indigoAccent-900">5. Признание недееспособным (ст. 28 ГК РБ):</strong>
+                            <p class="mt-1 text-slate-600">Судом вследствие психического расстройства. Назначается опекун, совершающий сделки от имени подопечного.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 4,
+                title: "Опека, попечительство и патронаж в гражданском праве",
+                category: "general",
+                articles: ["ст. 31–36 ГК РБ", "ст. 41 ГК РБ"],
+                intro: "Рассматриваются правовые институты восполнения дефицита дееспособности и оказания содействия гражданам при реализации прав.",
+                summary: "Опека (<14 лет и недееспособные) — опекун совершает сделки за подопечного. Попечительство (14–18 лет и ограниченно дееспособные) — согласует сделки. Патронаж (дееспособные по состоянию здоровья) — помощник на основе договора.",
+                hasTable: true,
+                details: `
+                    <p class="mb-3">Институты опеки, попечительства и патронажа представляют собой механизмы защиты имущественных и личных прав граждан, нуждающихся в помощи из-за возраста или состояния здоровья.</p>
+                `,
+                tableHtml: `
+                    <div class="overflow-x-auto mt-3">
+                        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+                            <thead>
+                                <tr class="bg-indigoAccent-50 text-indigoAccent-900 font-bold border-b border-slate-200">
+                                    <th class="p-2 border-r border-slate-200">Институт</th>
+                                    <th class="p-2 border-r border-slate-200">Субъекты</th>
+                                    <th class="p-2 border-r border-slate-200">Полномочия назначенного лица</th>
+                                    <th class="p-2">Ограничения и условия</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 text-slate-600">
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Опека (ст. 31–36)</td>
+                                    <td class="p-2 border-r border-slate-200">Малолетние до 14 лет; недееспособные.</td>
+                                    <td class="p-2 border-r border-slate-200">Опекун — законный представитель, совершает сделки от имени подопечного.</td>
+                                    <td class="p-2">Отчуждение/залог имущества только с разрешения органа опеки.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Попечительство (ст. 31–36)</td>
+                                    <td class="p-2 border-r border-slate-200">Несовершеннолетние от 14 до 18 лет; ограниченно дееспособные.</td>
+                                    <td class="p-2 border-r border-slate-200">Попечитель дает согласие на совершение сделок подопечным.</td>
+                                    <td class="p-2">Согласие на крупные сделки с разрешения органа опеки.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Патронаж (ст. 41)</td>
+                                    <td class="p-2 border-r border-slate-200">Совершеннолетние дееспособные, не способные защищать права по здоровью.</td>
+                                    <td class="p-2 border-r border-slate-200">Помощник действует по договору поручения или доверительного управления.</td>
+                                    <td class="p-2">Устанавливается с согласия подопечного. Распоряжение ограничено договором.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            },
+            {
+                id: 5,
+                title: "Порядок, условия и правовые последствия признания гражданина безвестно отсутствующим",
+                category: "general",
+                articles: ["ст. 38–40 ГК РБ"],
+                intro: "Анализируется институт устранения правовой неопределенности при длительном отсутствии сведений о месте пребывания гражданина.",
+                summary: "Признание безвестно отсутствующим: отсутствие сведений 1 год в месте жительства. Рассматривается судом. Последствия: передача имущества в доверительное управление, выдача содержания иждивенцам, упрощенный развод.",
+                details: `
+                    <p class="mb-3"><strong>Условия (ст. 38 ГК РБ):</strong> отсутствие сведений о месте пребывания гражданина в месте его жительства в течение <strong>1 года</strong>. Срок исчисляется с 1-го числа месяца, следующего за последними данными, или с 1 января следующего года.</p>
+                    <p class="mb-3"><strong>Порядок:</strong> особое судебное производство по заявлению заинтересованных лиц.</p>
+                    <p class="mb-2"><strong>Правовые последствия (ст. 39 ГК РБ):</strong></p>
+                    <ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-slate-700 mb-3">
+                        <li>Имущество передается в <strong>доверительное управление</strong> на основании решения суда.</li>
+                        <li>Из имущества выдается содержание иждивенцам и погашаются долги кредиторам.</li>
+                        <li>Брак может быть расторгнут в органах ЗАГС по заявлению супруга в упрощенном порядке.</li>
+                        <li>Прекращаются выданные доверенности.</li>
+                    </ul>
+                    <p><strong>При явке гражданина:</strong> решение суда отменяется, доверительное управление прекращается, брак может быть восстановлен по совместному заявлению (если супруг не вступил в новый брак).</p>
+                `
+            },
+            {
+                id: 6,
+                title: "Порядок, условия и правовые последствия объявления гражданина умершим",
+                category: "general",
+                articles: ["ст. 41–42 ГК РБ", "ст. 1035 ГК РБ"],
+                intro: "Характеризуется судебная презумпция гибели гражданина при длительном отсутствии или катастрофических обстоятельствах.",
+                summary: "Объявление умершим: отсутствие сведений 3 года (общий срок); 6 месяцев (при угрозе гибели); 2 года после завершения военных действий. Последствия = физическая смерть (открытие наследства, прекращение брака).",
+                details: `
+                    <p class="mb-3"><strong>Условия и сроки (ст. 41 ГК РБ):</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700 mb-3">
+                        <li><strong>Общий срок:</strong> отсутствие сведений в течение <strong>3 лет</strong>.</li>
+                        <li><strong>Специальный срок:</strong> <strong>6 месяцев</strong>, если пропал при обстоятельствах, угрожавших смертью (катастрофа, несчастный случай).</li>
+                        <li><strong>Военный срок:</strong> не ранее <strong>2 лет</strong> со дня окончания военных действий для военнослужащих.</li>
+                    </ul>
+                    <p class="mb-3"><strong>Правовые последствия:</strong> аналогичны физической смерти — открывается наследство (ст. 1035 ГК), прекращается брак и обязательства, неразрывно связанные с личностью.</p>
+                    <p><strong>При явке гражданина:</strong> решение отменяется. Гражданин вправе вернуть сохранившееся имущество, перешедшее безвозмездно (кроме денег и бумаг на предъявителя у добросовестного приобретателя). Возмездные приобретатели возвращают имущество только при доказанной недобросовестности.</p>
+                `
+            },
+            {
+                id: 7,
+                title: "Понятие и признаки юридического лица. Правоспособность и дееспособность юридических лиц",
+                category: "general",
+                articles: ["ст. 44 ГК РБ", "ст. 48–52 ГК РБ"],
+                intro: "Вопрос охватывает понятие, легальные признаки, возникновение и объем правоспособности юридических лиц в РБ.",
+                summary: "Юридическое лицо (ст. 44 ГК) — организация, имеющая обособленное имущество, отвечающая им по обязательствам, выступающая в обороте от своего имени. 4 признаки: обособленность, ответственность, орг. единство, имя.",
+                details: `
+                    <p class="mb-3"><strong>Легальные признаки (ст. 44 ГК РБ):</strong></p>
+                    <ol class="list-decimal pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700 mb-4">
+                        <li><strong>Имущественная обособленность:</strong> наличие самостоятельного баланса/сметы, имущества на праве собственности, хоз. ведения или оперативного управления.</li>
+                        <li><strong>Самостоятельная имущественная ответственность (ст. 52 ГК):</strong> отвечает по долгам всем своим имуществом. Учредители по общему правилу не отвечают.</li>
+                        <li><strong>Организационное единство:</strong> наличие четкой структуры органов управления, закрепленной в уставе.</li>
+                        <li><strong>Выступление в обороте от своего имени:</strong> наличие фирменного наименования, возможность быть истцом и ответчиком в суде.</li>
+                    </ol>
+                    <p class="mb-2"><strong>Правоспособность и дееспособность:</strong> возникают одновременно в момент внесения записи в Единый государственный регистр (ЕГР).</p>
+                    <ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-slate-700">
+                        <li><em>Общая (универсальная):</em> у коммерческих организаций (кроме УП) — право совершать любые сделки.</li>
+                        <li><em>Специальная (целевая):</em> у некоммерческих организаций, УП, банков, страховых организаций.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 8,
+                title: "Дайте общую характеристику объектам гражданских прав",
+                category: "general",
+                articles: ["ст. 128–143 ГК РБ"],
+                intro: "Анализируется классификация вещей, денег, ценных бумаг и нематериальных благ в гражданском обороте Беларуси.",
+                summary: "Объекты (ст. 128 ГК): вещи (включая деньги и ценные бумаги), имущественные права, работы/услуги, охраняемая информация, результаты интеллектуальной деятельности, нематериальные блага.",
+                details: `
+                    <p class="mb-3"><strong>Классификация вещей:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700 mb-3">
+                        <li><strong>Недвижимые и движимые (ст. 130 ГК):</strong> недвижимость (земельные участки, здания, предприятия) требует государственной регистрации прав и сделок.</li>
+                        <li><strong>Индивидуально-определенные и родовые:</strong> индивидуальные незаменимы (объект виндикации); родовые заменимы числом/мерой (предмет займа).</li>
+                        <li><strong>Делимые и неделимые (ст. 133 ГК):</strong> неделимые меняют назначение при разделе.</li>
+                        <li><strong>Главная вещь и принадлежность (ст. 135 ГК):</strong> принадлежность следует судьбе главной вещи.</li>
+                        <li><strong>Деньги (валюта) (ст. 141 ГК):</strong> законное платежное средство — белорусский рубль (BYN).</li>
+                        <li><strong>Ценные бумаги (ст. 143 ГК):</strong> акции, облигации, векселя, чеки, коносаменты.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 9,
+                title: "Понятие и признаки гражданско-правовой сделки",
+                category: "general",
+                articles: ["ст. 154–159 ГК РБ"],
+                intro: "Рассматривается ключевой юридический факт гражданского права — сделка, ее сущность и виды.",
+                summary: "Сделка (ст. 154 ГК) — волевое, правомерное действие граждан и юрлиц, направленное на установление, изменение или прекращение гражданских прав и обязанностей. Признаки: волевой характер, правомерность, направленность.",
+                details: `
+                    <p class="mb-3"><strong>Квалифицирующие признаки сделки:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700 mb-3">
+                        <li><strong>Волевой характер:</strong> единство внутренней воли и внешнего волеизъявления.</li>
+                        <li><strong>Правомерность:</strong> соответствие законодательству (отграничение от деликтов).</li>
+                        <li><strong>Целенаправленность:</strong> воля на достижение определенного правового результата.</li>
+                    </ul>
+                    <p class="mb-2"><strong>Классификация сделок:</strong></p>
+                    <p class="text-xs sm:text-sm text-slate-600">Односторонние и договоры; Консенсуальные и Реальные; Возмездные и Безвозмездные; Каузальные и Абстрактные; Безусловные и Условные (с отлагательным/отменительным условием — ст. 158 ГК).</p>
+                `
+            },
+            {
+                id: 10,
+                title: "Перечислите условия действительности сделок и дайте им краткую характеристику",
+                category: "general",
+                articles: ["ст. 160–165 ГК РБ", "ст. 169 ГК РБ"],
+                intro: "Четыре обязательных элемента для наступления правовых последствий сделки.",
+                summary: "Условия действительности: 1. Законность содержания. 2. Надлежащая правосубъектность. 3. Соответствие воли и волеизъявления. 4. Соблюдение формы (устная, простая письменная, нотариальная, госрегистрация).",
+                details: `
+                    <div class="space-y-2 text-xs sm:text-sm">
+                        <p><strong>1. Законность содержания:</strong> условия не противоречат законодательству, правопорядку и нравственности (ст. 169 ГК).</p>
+                        <p><strong>2. Правосубъектность участников:</strong> наличие достаточной дееспособности у физлиц и компетенции/правоспособности у юрлиц (ст. 174–175 ГК).</p>
+                        <p><strong>3. Свобода и совпадение воли и волеизъявления:</strong> отсутствие обмана, насилия, угроз, существенного заблуждения.</p>
+                        <p><strong>4. Соблюдение надлежащей формы:</strong></p>
+                        <ul class="list-disc pl-5 space-y-1 text-slate-600">
+                            <li><em>Устная:</em> исполняемая при самом совершении (ст. 160 ГК).</li>
+                            <li><em>Простая письменная:</em> сделки юрлиц между собой и с гражданами, а также сделки граждан свыше установленного предела БВ (ст. 162 ГК).</li>
+                            <li><em>Нотариальная:</em> в случаях прямо предусмотренных законом (рента, завещание, ипотека) или соглашением (ст. 164 ГК).</li>
+                            <li><em>Государственная регистрация:</em> сделки с недвижимостью (ст. 165 ГК).</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                id: 11,
+                title: "Охарактеризуйте недействительные сделки и перечислите их пороки",
+                category: "general",
+                articles: ["ст. 167–181 ГК РБ"],
+                intro: "Классификация недействительных сделок на ничтожные и оспоримые, их пороки и реституционные последствия.",
+                summary: "Недействительная сделка не порождает юридических последствий, кроме недействительности. Делится на Ничтожные (абсолютно недействительные) и Оспоримые (признанные судом). Пороки: воли, содержания, формы, субъекта.",
+                hasTable: true,
+                details: `
+                    <p class="mb-3"><strong>Недействительная сделка (ст. 167 ГК РБ)</strong> — сделка, совершенная с нарушением условий действительности.</p>
+                    <p class="mb-2"><strong>Виды пороков:</strong> пороки воли (насилие, обман), пороки содержания (мнимые, притворные, противозаконные), пороки формы (отсутствие нотариата/регистрации), пороки субъектов (недееспособность).</p>
+                `,
+                tableHtml: `
+                    <div class="overflow-x-auto mt-3">
+                        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+                            <thead>
+                                <tr class="bg-rose-50 text-rose-900 font-bold border-b border-slate-200">
+                                    <th class="p-2 border-r border-slate-200">Категория</th>
+                                    <th class="p-2 border-r border-slate-200">Порядок признания</th>
+                                    <th class="p-2 border-r border-slate-200">Составы по ГК РБ</th>
+                                    <th class="p-2">Последствия</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 text-slate-600">
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-rose-800">Ничтожные сделки</td>
+                                    <td class="p-2 border-r border-slate-200">Недействительны с момента совершения независимо от решения суда.</td>
+                                    <td class="p-2 border-r border-slate-200">Противоречащие закону (ст. 169); мнимые и притворные (ст. 171); сделки недееспособных (ст. 172) и малолетних (ст. 173).</td>
+                                    <td class="p-2 font-medium">Двусторонняя реституция (возврат полученного) по общему правилу (ст. 168).</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-amber-800">Оспоримые сделки</td>
+                                    <td class="p-2 border-r border-slate-200">Недействительны в силу признания таковыми судом по иску управомоченного лица.</td>
+                                    <td class="p-2 border-r border-slate-200">Совершенные несовершеннолетними 14–18 лет (ст. 176); под влиянием заблуждения (ст. 179), обмана, насилия, угрозы (ст. 180).</td>
+                                    <td class="p-2 font-medium">Двусторонняя, односторонняя реституция или конфискация в доход государства.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            },
+            {
+                id: 12,
+                title: "Дайте понятие представительства в гражданском праве и назовите его виды",
+                category: "general",
+                articles: ["ст. 183–187 ГК РБ"],
+                intro: "Институт совершения сделок одним лицом от имени и в интересах другого лица.",
+                summary: "Представительство (ст. 183 ГК) — совершение представителем сделок от имени представляемого, создающее права/обязанности прямо для представляемого. Виды: добровольное (доверенность ст. 186), законное, из обстановки, коммерческое (ст. 185).",
+                details: `
+                    <p class="mb-3"><strong>Виды представительства:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700">
+                        <li><strong>Добровольное (договорное):</strong> основано на соглашении сторон и выражается в выдаче <strong>доверенности</strong> (письменного уполномочия — ст. 186 ГК).</li>
+                        <li><strong>Законное (обязательное):</strong> вытекает из актов законодательства (родители за детей, опекуны).</li>
+                        <li><strong>На основании административного акта:</strong> акт органа (антикризисный управляющий).</li>
+                        <li><strong>Явствующее из обстановки:</strong> действия продавца, кассира.</li>
+                        <li><strong>Коммерческое (ст. 185 ГК):</strong> профессиональное представительство в сфере бизнеса.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 13,
+                title: "Определите понятие, виды сроков в гражданском праве. Исковая давность",
+                category: "general",
+                articles: ["ст. 196–209 ГК РБ"],
+                intro: "Времениподобные юридические факты и ключевой институт защиты нарушенных прав — исковая давность.",
+                summary: "Срок — период или момент времени. Общий срок исковой давности (ст. 197 ГК) = 3 года. Специальные сроки (напр., 1 год — перевозка). Приостановление (ст. 203) и перерыв (ст. 204). Не распространяется на нематериальные блага, вклады, негаторные иски.",
+                details: `
+                    <p class="mb-3"><strong>Исковая давность (ст. 196 ГК РБ)</strong> — срок для защиты права по иску лица, право которого нарушено.</p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700 mb-3">
+                        <li><strong>Общий срок:</strong> <strong>3 года</strong> (ст. 197 ГК).</li>
+                        <li><strong>Специальные сроки:</strong> сокращенные (1 год — недействительность оспоримых сделок, претензии из перевозки) или удлиненные.</li>
+                        <li><strong>Начало течения:</strong> со дня, когда лицо узнало или должно было узнать о нарушении права (ст. 201 ГК).</li>
+                        <li><strong>Приостановление (ст. 203 ГК):</strong> непреодолимая сила, мораторий, военное положение (в последние 6 месяцев срока).</li>
+                        <li><strong>Перерыв (ст. 204 ГК):</strong> предъявление иска или признание долга обязанным лицом (срок начинается заново).</li>
+                    </ul>
+                `
+            },
+            {
+                id: 14,
+                title: "Дайте понятие права собственности и раскройте его содержание",
+                category: "property",
+                articles: ["ст. 210–212 ГК РБ"],
+                intro: "Центральный институт вещного права, абсолютное юридическое господство лица над вещью.",
+                summary: "Право собственности (ст. 210 ГК) — «триада правомочий»: Владение, Пользование, Распоряжение. Собственник несет бремя содержания (ст. 211) и риск случайной гибели имущества (ст. 212).",
+                details: `
+                    <p class="mb-3"><strong>Содержание «триады» (ст. 210 ГК РБ):</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700 mb-3">
+                        <li><strong>Правомочие владения:</strong> юридически обеспеченная возможность фактического обладания вещью.</li>
+                        <li><strong>Правомочие пользования:</strong> возможность извлечения из вещи ее полезных свойств, плодов и доходов.</li>
+                        <li><strong>Правомочие распоряжения:</strong> возможность определять юридическую судьбу вещи (отчуждение, залог, уничтожение).</li>
+                    </ul>
+                    <p><strong>Бремя и риск:</strong> Собственник несет бремя содержания имущества (ст. 211 ГК) и риск его случайной гибели или повреждения (ст. 212 ГК), если иное не предусмотрено законом или договором.</p>
+                `
+            },
+            {
+                id: 15,
+                title: "Назовите формы и укажите субъекты права собственности",
+                category: "property",
+                articles: ["ст. 13 Конституции РБ", "ст. 213 ГК РБ"],
+                intro: "Конституционные основы и нормативное закрепление видов и субъектов собственности в Беларуси.",
+                summary: "Формы собственности в РБ (ст. 13 Конституции, ст. 213 ГК): Государственная (Республиканская и Коммунальная) и Частная (Граждане и Негосударственные юридические лица). Равноправие форм.",
+                details: `
+                    <div class="space-y-3 text-xs sm:text-sm">
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <strong class="text-indigoAccent-900">1. Государственная собственность:</strong>
+                            <ul class="list-disc pl-4 mt-1 text-slate-600 space-y-1">
+                                <li><em>Республиканская собственность:</em> субъект — Республика Беларусь. Объекты: казна, земля, недра, стратегические предприятия.</li>
+                                <li><em>Коммунальная собственность:</em> субъекты — административно-территориальные единицы (области, районы, города). Объекты: местная казна, ЖКХ.</li>
+                            </ul>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <strong class="text-indigoAccent-900">2. Частная собственность:</strong>
+                            <ul class="list-disc pl-4 mt-1 text-slate-600 space-y-1">
+                                <li><em>Собственность граждан (физических лиц):</em> физлица без ограничения количества и стоимости имущества (кроме изъятого из оборота).</li>
+                                <li><em>Собственность негосударственных юридических лиц:</em> хозяйственные общества, товарищества, кооперативы.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 16,
+                title: "Дайте понятие ограниченного вещного права и раскройте его виды",
+                category: "property",
+                articles: ["ст. 268–279 ГК РБ", "Кодекс о земле РБ", "Жилищный кодекс РБ"],
+                intro: "Права на чужие вещи, обладающие абсолютной защитой и свойством следования.",
+                summary: "Ограниченное вещное право — право лица на чужую вещь в установленных законом пределах. Признаки: право следования, абсолютная защита. Виды: Хозяйственное ведение, Оперативное управление, Сервитут, Пожизненное наследуемое владение и др.",
+                hasTable: true,
+                details: `
+                    <p class="mb-3">Ограниченные вещные права сохраняются при переходе права собственности на имущество к другому лицу (свойство следования).</p>
+                `,
+                tableHtml: `
+                    <div class="overflow-x-auto mt-3">
+                        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                    <th class="p-2 border-r border-slate-200">Вид права</th>
+                                    <th class="p-2 border-r border-slate-200">Норма</th>
+                                    <th class="p-2">Субъекты и содержание</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 text-slate-600">
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Хозяйственное ведение</td>
+                                    <td class="p-2 border-r border-slate-200">ст. 276 ГК</td>
+                                    <td class="p-2">Государственные и коммунальные Унитарные предприятия (УП). Владение, пользование и распоряжение в пределах, заданных собственником.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Оперативное управление</td>
+                                    <td class="p-2 border-r border-slate-200">ст. 277, 279 ГК</td>
+                                    <td class="p-2">Казенные предприятия и учреждения. Осуществляется в строгом соответствии с заданиями собственника и сметой.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Сервитут</td>
+                                    <td class="p-2 border-r border-slate-200">ст. 268–270 ГК</td>
+                                    <td class="p-2">Право ограниченного пользования чужим недвижимым имуществом (проход, проезд, коммуникации).</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Пожизненное наследуемое владение</td>
+                                    <td class="p-2 border-r border-slate-200">Кодекс о земле</td>
+                                    <td class="p-2">Предоставляется гражданам для строительства дома, ведения личного подсобного хозяйства; передается по наследству.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            },
+            {
+                id: 17,
+                title: "Определите понятие и виды обязательств",
+                category: "obligations",
+                articles: ["ст. 288–303 ГК РБ"],
+                intro: "Правоотношение динамики имущественного оборота: обязанность должника совершить действие или воздержаться от него.",
+                summary: "Обязательство (ст. 288 ГК) — правоотношение, где должник обязан совершить в пользу кредитора действие (передать имущество, работу, услугу, деньги), а кредитор имеет право требовать. Виды: договорные/внедоговорные, альтернативные, солидарные, субсидиарные, акцессорные.",
+                details: `
+                    <p class="mb-3"><strong>Классификация обязательств:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700">
+                        <li><strong>По основанию:</strong> Договорные и Внедоговорные (деликтные и неосновательное обогащение).</li>
+                        <li><strong>По структуре прав и обязанностей:</strong> Односторонние (заем) и Двусторонние/взаимные (купля-продажа).</li>
+                        <li><strong>По характеру предмета:</strong> Альтернативные (право выбора из нескольких действий — ст. 301 ГК) и Факультативные.</li>
+                        <li><strong>При множественности лиц:</strong> Долевые (ст. 302 ГК), Солидарные (ст. 303 ГК), Субсидиарные (ст. 370 ГК — дополнительная ответственность).</li>
+                        <li><strong>По юридической зависимости:</strong> Основные и Акцессорные (обеспечительные: неустойка, залог, поручительство, задаток).</li>
+                    </ul>
+                `
+            },
+            {
+                id: 18,
+                title: "Раскройте понятие договора и проанализируйте виды договора",
+                category: "obligations",
+                articles: ["ст. 390–405 ГК РБ"],
+                intro: "Основная правовая форма экономических связей и товарообмена.",
+                summary: "Договор (ст. 390 ГК) — соглашение двух или нескольких лиц об установлении, изменении или прекращении гражданских прав и обязанностей. Принцип свободы договора (ст. 391). Виды: публичный (ст. 396), присоединения (ст. 398), предварительный (ст. 405).",
+                details: `
+                    <p class="mb-3"><strong>Специальные конструкции договоров:</strong></p>
+                    <div class="space-y-2 text-xs sm:text-sm">
+                        <p><strong>Публичный договор (ст. 396 ГК РБ):</strong> заключается коммерческой организацией и устанавливает обязанность продавать товары/услуги каждому обратившемуся на равных условиях (розница, связь, транспорт). Отказ не допускается.</p>
+                        <p><strong>Договор присоединения (ст. 398 ГК РБ):</strong> условия определены одной из сторон в стандартных формах и могут быть приняты другой стороной только путем присоединения в целом (банковское обслуживание).</p>
+                        <p><strong>Предварительный договор (ст. 405 ГК РБ):</strong> обязательство заключить в будущем основной договор на согласованных условиях.</p>
+                    </div>
+                `
+            },
+            {
+                id: 19,
+                title: "Назовите понятие, признаки, виды и содержание договора купли-продажи",
+                category: "obligations",
+                articles: ["ст. 424–439 ГК РБ"],
+                intro: "Базовый договор о передаче имущества в собственность за деньги.",
+                summary: "Купля-продажа (ст. 424 ГК) — продавец обязуется передать товар в собственность покупателю, а покупатель — принять и уплатить сумму. Консенсуальный, возмездный, взаимный. Единственное существенное условие по общему правилу — предмет (наименование и количество товаров — ст. 425 ГК).",
+                details: `
+                    <p class="mb-3"><strong>Виды купли-продажи:</strong> розничная купля-продажа, поставка, поставка для госнужд, контрактация, энергоснабжение, продажа недвижимости, продажа предприятия.</p>
+                    <p class="mb-2"><strong>Обязанности сторон:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-slate-700">
+                        <li><em>Продавец:</em> передать товар надлежащего качества (ст. 439 ГК), свободным от прав третьих лиц, в комплектности и установленный срок.</li>
+                        <li><em>Покупатель:</em> осмотреть, принять товар и оплатить согласованную цену.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 20,
+                title: "Охарактеризуйте договор розничной купли-продажи",
+                category: "obligations",
+                articles: ["ст. 462–475 ГК РБ", "Закон РБ «О защите прав потребителей»"],
+                intro: "Публичный договор между продавцом-предпринимателем и гражданином-потребителем.",
+                summary: "Розничная купля-продажа (ст. 462 ГК) — товар продается для личного, семейного использования, не связанного с предпринимательством. Публичный договор. Форма: кассовый/товарный чек (ст. 463). Обмен качественного товара — 14 дней (ст. 472).",
+                details: `
+                    <p class="mb-3"><strong>Права потребителя при покупке товара ненадлежащего качества (ст. 473 ГК РБ):</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700">
+                        <li>Потребовать замены товара на качественный.</li>
+                        <li>Соразмерного уменьшения покупной цены.</li>
+                        <li>Незамедлительного безвозмездного устранения недостатков (ремонта).</li>
+                        <li>Возмещения расходов на устранение недостатков.</li>
+                        <li>Расторжения договора и возврата уплаченной денежной суммы.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 21,
+                title: "Дайте общую характеристику договора поставки",
+                category: "obligations",
+                articles: ["ст. 476–494 ГК РБ"],
+                intro: "Договор оптового товарооборота между субъектами хозяйствования.",
+                summary: "Поставка (ст. 476 ГК) — поставщик-предприниматель обязуется передать в обусловленный срок производимые или закупаемые товары покупателю для использования в предпринимательской деятельности. Отличие: субъекты — бизнес, длительный характер, партии.",
+                details: `
+                    <p class="mb-3"><strong>Специфика регулирования:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700">
+                        <li><strong>Урегулирование разногласий (ст. 477 ГК):</strong> сторона, получившая акцепт с протоколом разногласий, обязана в 30-дневный срок согласовать условия либо уведомить об отказе.</li>
+                        <li><strong>Односторонний отказ (ст. 493 ГК):</strong> допускается при существенном нарушении (неоднократная поставка некачественного товара, систематические неплатежи).</li>
+                    </ul>
+                `
+            },
+            {
+                id: 22,
+                title: "Охарактеризуйте договор контрактации",
+                category: "obligations",
+                articles: ["ст. 505–509 ГК РБ"],
+                intro: "Правовая форма закупки производимой сельхозпродукции.",
+                summary: "Контрактация (ст. 505 ГК) — производитель сельхозпродукции обязуется передать выработанную продукцию заготовителю для переработки или продажи. Особенность: производитель отвечает только при наличии ВИНЫ (ст. 509 ГК — льготный режим!).",
+                details: `
+                    <p class="mb-3"><strong>Субъекты:</strong> Производитель (фермерское хозяйство, СПК) и Заготовитель (мясокомбинат, молокозавод, элеватор).</p>
+                    <p class="mb-3"><strong>Предмет:</strong> будущая сырая сельскохозяйственная продукция.</p>
+                    <p><strong>Льготная ответственность:</strong> ввиду зависимости от природных факторов производитель сельхозпродукции освобожден от строгой предпринимательской ответственности и отвечает <em>только при наличии вины</em> (ст. 509 ГК РБ).</p>
+                `
+            },
+            {
+                id: 23,
+                title: "Охарактеризуйте договор дарения",
+                category: "obligations",
+                articles: ["ст. 543–553 ГК РБ"],
+                intro: "Безвозмездный договор передачи имущества в собственность.",
+                summary: "Дарение (ст. 543 ГК) — безвозмездная передача вещи или права. Форма: письменная при сумме > 5 БВ от юрлица, госрегистрация недвижимости (ст. 545). Запрет дарения (ст. 546). Отмена дарения при покушении на жизнь дарителя (ст. 549).",
+                details: `
+                    <p class="mb-3"><strong>Запрещение дарения (ст. 546 ГК РБ):</strong> не допускается дарение (свыше 5 БВ) от имени малолетних их представителями; работникам лечебных/соц. учреждений находящимися там гражданами; госслужащим в связи с должностными обязанностями; между коммерческими организациями.</p>
+                    <p><strong>Отмена дарения (ст. 549 ГК РБ):</strong> возможна, если одаряемый совершил покушение на жизнь дарителя, его близких или причинил телесные повреждения.</p>
+                `
+            },
+            {
+                id: 24,
+                title: "Охарактеризуйте договор пожизненного содержания с иждивением",
+                category: "obligations",
+                articles: ["ст. 572–576 ГК РБ"],
+                intro: "Разновидность ренты, объект которой — исключительно недвижимость.",
+                summary: "Пожизненное содержание с иждивением (ст. 572 ГК) — гражданин передает недвижимость в собственность плательщика ренты, который обязуется осуществлять пожизненное содержание с иждивением. Нотариальная форма + госрегистрация. Ежемесячный объем содержания >= 2 Базовых Величин.",
+                details: `
+                    <p class="mb-3"><strong>Особенность объекта:</strong> только <strong>недвижимое имущество</strong> (квартира, дом, земельный участок).</p>
+                    <p class="mb-3"><strong>Ограничение распоряжения (ст. 574 ГК РБ):</strong> плательщик ренты вправе отчуждать или закладывать недвижимость <em>только с предварительного согласия</em> получателя ренты.</p>
+                    <p><strong>Прекращение:</strong> прекращается смертью получателя ренты. При существенном нарушении плательщиком получатель вправе потребовать возврата недвижимости.</p>
+                `
+            },
+            {
+                id: 25,
+                title: "Дайте общую характеристику договора аренды (имущественного найма)",
+                category: "obligations",
+                articles: ["ст. 577–600 ГК РБ"],
+                intro: "Договор о предоставлении непотребляемого имущества во временное владение и пользование за плату.",
+                summary: "Аренда (ст. 577 ГК) — предоставление имущества за плату во временное пользование. Объекты: непотребляемые вещи. Капитальный ремонт — обязанность Арендодателя, Текущий ремонт — Арендатора (ст. 587 ГК). Субаренда — только с согласия арендодателя (ст. 586 ГК).",
+                hasTable: true,
+                details: `
+                    <p class="mb-3">Переход права собственности на сданное в аренду имущество к другому лицу не является основанием для изменения или расторжения договора аренды (ст. 588 ГК РБ).</p>
+                `,
+                tableHtml: `
+                    <div class="overflow-x-auto mt-3">
+                        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+                            <thead>
+                                <tr class="bg-indigoAccent-50 text-indigoAccent-900 font-bold border-b border-slate-200">
+                                    <th class="p-2 border-r border-slate-200">Сфера</th>
+                                    <th class="p-2 border-r border-slate-200">Обязанности Арендодателя</th>
+                                    <th class="p-2">Обязанности Арендатора</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 text-slate-600">
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Использование вещи</td>
+                                    <td class="p-2 border-r border-slate-200">Предоставить имущество в состояние по договору со всеми принадлежностями.</td>
+                                    <td class="p-2">Пользоваться имуществом по назначению и вернуть в исходном состоянии с учетом износа.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Ремонтные работы (ст. 587)</td>
+                                    <td class="p-2 border-r border-slate-200 font-semibold text-indigoAccent-900">Капитальный ремонт (за свой счет, если иное не в договоре).</td>
+                                    <td class="p-2 font-semibold text-indigoAccent-900">Текущий ремонт и поддержание в исправном состоянии.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-slate-800">Распоряжение</td>
+                                    <td class="p-2 border-r border-slate-200">Сохраняет право собственности.</td>
+                                    <td class="p-2">Субаренда и перенаем — <em>только с письменного согласия</em> арендодателя (ст. 586).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            },
+            {
+                id: 26,
+                title: "Охарактеризуйте договор перевозки груза",
+                category: "obligations",
+                articles: ["ст. 739–753 ГК РБ"],
+                intro: "Опосредует перемещение материальных ценностей в пространстве транспортными организациями.",
+                summary: "Перевозка груза (ст. 739 ГК) — перевозчик обязуется доставить груз в пункт назначения и выдать получателю, а отправитель — уплатить плату. Договор реальный, возмездный. Оформляется транспортной накладной (ТТН, CMR). Претензионный порядок обязателен. Исковая давность = 1 год (ст. 751 ГК).",
+                details: `
+                    <p class="mb-3"><strong>Ответственность перевозчика (ст. 750 ГК РБ):</strong> отвечает за утрату, недостачу и повреждение груза, если не докажет, что они возникли вследствие обстоятельств, которые он не мог предотвратить (презумпция вины).</p>
+                    <p><strong>Обязательный претензионный порядок:</strong> до предъявления иска к перевозчику обязательно предъявление претензии в установленном порядке.</p>
+                `
+            },
+            {
+                id: 27,
+                title: "Охарактеризуйте договор хранения",
+                category: "obligations",
+                articles: ["ст. 776–795 ГК РБ"],
+                intro: "Договор об оказании услуг по обеспечению сохранности вещей.",
+                summary: "Хранение (ст. 776 ГК) — хранитель обязуется хранить вещь, переданную поклажедателем, и вернуть в сохранности. Форма: расписка, жетон, квитанция (ст. 777 ГК). Ответственность: обычный хранитель отвечает при наличии вины, профессиональный (склад, ломбард) — безвиновная ответственность.",
+                details: `
+                    <p class="mb-3"><strong>Дифференциация ответственности (ст. 791 ГК РБ):</strong></p>
+                    <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700">
+                        <li><em>Непрофессиональный хранитель:</em> отвечает за утрату или повреждение вещей только при наличии своей вины.</li>
+                        <li><em>Профессиональный хранитель (товарные склады, ломбарды):</em> отвечает вне зависимости от вины, если не докажет действие непреодолимой силы или умысел поклажедателя.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 28,
+                title: "Ответственность за вред, причиненный источником повышенной опасности",
+                category: "torts_inheritance",
+                articles: ["ст. 948 ГК РБ"],
+                intro: "Строгая безвиновная ответственность владельцев опасных объектов и механизмов.",
+                summary: "Владелец источника повышенной опасности (ИПО — авто, механизмы, ток, химикаты) обязан возместить вред НЕЗАВИСИМО ОТ ВИНЫ (ст. 948 ГК). Освобождение: умысел потерпевшего или непреодолимая сила. При противоправном изъятии (угон) отвечает угонщик.",
+                details: `
+                    <p class="mb-3"><strong>Субъект ответственности:</strong> владелец ИПО (собственник, арендатор, лицо по доверенности). Водитель по трудовому договору владетелем не является — отвечает его наниматель.</p>
+                    <p class="mb-3"><strong>Основания освобождения от ответственности:</strong></p>
+                    <ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm text-slate-700">
+                        <li>Непреодолимая сила.</li>
+                        <li>Умысел потерпевшего.</li>
+                        <li>Выбытие ИПО из обладания владельца в результате противоправных действий (угон).</li>
+                    </ul>
+                    <p><strong>Взаимный вред владельцев ИПО:</strong> при столкновении авто вред друг другу возмещается на общих основаниях (по вине).</p>
+                `
+            },
+            {
+                id: 29,
+                title: "Ответственность нанимателя за вред, причиненный его работниками",
+                category: "torts_inheritance",
+                articles: ["ст. 937 ГК РБ", "ст. 950 ГК РБ", "Трудовой кодекс РБ"],
+                intro: "Опосредованная гражданско-правовая ответственность работодателя за действия персонала.",
+                summary: "Юридическое лицо или гражданин возмещает вред, причиненный его работником при исполнении трудовых (служебных) обязанностей (ст. 937 ГК). Наниматель, возместивший вред, имеет право регрессного требования к работнику (ст. 950 ГК) по нормам ТК РБ.",
+                details: `
+                    <p class="mb-3"><strong>Условия ответственности нанимателя:</strong></p>
+                    <ol class="list-decimal pl-5 space-y-1.5 text-xs sm:text-sm text-slate-700 mb-3">
+                        <li>Наличие трудового договора или выполнения работ под контролем и руководством нанимателя.</li>
+                        <li>Причинение вреда <em>при исполнении служебных (трудовых) обязанностей</em>.</li>
+                    </ol>
+                    <p><strong>Право регресса (ст. 950 ГК РБ):</strong> Выплативший возмещение наниматель имеет право обратного требования к работнику в размере уплаченного возмещения, в пределах и порядке, установленных трудовым законодательством РБ (ограниченная или полная материальная ответственность по ТК РБ).</p>
+                `
+            },
+            {
+                id: 30,
+                title: "Общие положения о наследовании по завещанию и по закону",
+                category: "torts_inheritance",
+                articles: ["ст. 1031–1071 ГК РБ"],
+                intro: "Переход имущества умершего в порядке универсального правопреемства.",
+                summary: "Наследование: по завещанию (нотариальное, свобода, обязательная доля ст. 1064) и по закону (7 очередей наследников). Срок принятия наследства — 6 месяцев со дня открытия (ст. 1071 ГК).",
+                hasTable: true,
+                details: `
+                    <p class="mb-3"><strong>Наследование по завещанию (ст. 1040 ГК):</strong> Завещание — личное распоряжение дееспособного гражданина. Требуется нотариальная форма. Свобода завещания ограничивается <strong>обязательной долей (ст. 1064 ГК)</strong>: несовершеннолетние/нетрудоспособные дети, нетрудоспособные супруг и родители наследуют <em>не менее половины доли</em>, причитавшейся бы при наследовании по закону.</p>
+                    <p class="mb-3"><strong>Наследование по закону:</strong> при отсутствии завещания. Наследники призываются в порядке очередности.</p>
+                `,
+                tableHtml: `
+                    <div class="overflow-x-auto mt-3">
+                        <table class="w-full text-xs text-left border-collapse border border-slate-200">
+                            <thead>
+                                <tr class="bg-amber-50 text-amber-900 font-bold border-b border-slate-200">
+                                    <th class="p-2 border-r border-slate-200">Очередь</th>
+                                    <th class="p-2 border-r border-slate-200">Круг наследников по закону</th>
+                                    <th class="p-2">Наследование по праву представления (ст. 1062)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200 text-slate-600">
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-amber-800">I очередь (ст. 1057)</td>
+                                    <td class="p-2 border-r border-slate-200">Дети, супруг и родители наследодателя.</td>
+                                    <td class="p-2">Внуки наследодателя и их потомки.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-amber-800">II очередь (ст. 1058)</td>
+                                    <td class="p-2 border-r border-slate-200">Полнородные и неполнородные братья и сестры.</td>
+                                    <td class="p-2">Племянники и племянницы.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-amber-800">III очередь (ст. 1059)</td>
+                                    <td class="p-2 border-r border-slate-200">Дедушки и бабушки как по отцу, так и по матери.</td>
+                                    <td class="p-2">Не применяется.</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 border-r border-slate-200 font-bold text-amber-800">IV очередь (ст. 1060)</td>
+                                    <td class="p-2 border-r border-slate-200">Родные дяди и тети.</td>
+                                    <td class="p-2">Двоюродные братья и сестры умершего.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            }
+        ];
+
+        // Global State Management
+        let bookmarks = JSON.parse(localStorage.getItem('civil_law_bookmarks') || '[]');
+        let activeCategory = 'all';
+        let searchQuery = '';
+        let flashcardIndex = 0;
+
+        // Intro Descriptions for Sections
+        const sectionIntros = {
+            'all': 'Показаны все 30 вопросов программы экзамена по Гражданскому праву Республики Беларусь. Нажмите на любой вопрос, чтобы открыть детальную доктринальную справку со статьями ГК РБ.',
+            'general': '<strong>Раздел 1. Общая часть (Вопросы 1–13):</strong> Регламентирует предмет, метод, правоотношения, физических и юридических лиц, сделки, представительство, сроки и исковую давность.',
+            'property': '<strong>Раздел 2. Вещное право (Вопросы 14–16):</strong> Закрепляет триаду права собственности (владение, пользование, распоряжение), формы собственности РБ и ограниченные вещные права.',
+            'obligations': '<strong>Раздел 3. Обязательственное и Договорное право (Вопросы 17–27):</strong> Понятие обязательств, классификация договоров и детальный разбор отдельных видов (купля-продажа, аренда, хранение, перевозка и др.).',
+            'torts_inheritance': '<strong>Раздел 4. Внедоговорные обязательства и Наследование (Вопросы 28–30):</strong> Деликтная ответственность владельцев ИПО и нанимателей, а также институты наследования по завещанию и по закону.'
+        };
+
+        // DOM Content Loaded Handler
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            renderQuestions();
+            updateBookmarkBadge();
+            updateSectionIntro();
+
+            // Event Listeners
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase().trim();
+                renderQuestions();
+            });
+
+            document.getElementById('category-tabs').addEventListener('click', (e) => {
+                const btn = e.target.closest('.tab-btn');
+                if (!btn) return;
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('bg-academic-900', 'text-white', 'shadow-sm');
+                    b.classList.add('bg-white', 'text-slate-600');
+                });
+                btn.classList.remove('bg-white', 'text-slate-600');
+                btn.classList.add('bg-academic-900', 'text-white', 'shadow-sm');
+                
+                activeCategory = btn.dataset.cat;
+                updateSectionIntro();
+                renderQuestions();
+            });
+
+            document.getElementById('view-bookmarks-btn').addEventListener('click', () => {
+                if (activeCategory === 'bookmarks') {
+                    activeCategory = 'all';
+                } else {
+                    activeCategory = 'bookmarks';
+                }
+                renderQuestions();
+            });
+
+            document.getElementById('toggle-dashboard-btn').addEventListener('click', () => {
+                const db = document.getElementById('analytics-dashboard');
+                const btnText = document.getElementById('dash-btn-text');
+                if (db.classList.contains('hidden')) {
+                    db.classList.remove('hidden');
+                    btnText.textContent = 'Скрыть аналитику';
+                } else {
+                    db.classList.add('hidden');
+                    btnText.textContent = 'Показать аналитику';
+                }
+            });
+
+            // Flashcard Mode Listeners
+            document.getElementById('mode-flashcards-btn').addEventListener('click', startFlashcards);
+            document.getElementById('fc-exit-btn').addEventListener('click', exitFlashcards);
+            document.getElementById('fc-show-ans-btn').addEventListener('click', () => {
+                document.getElementById('fc-answer-container').classList.toggle('hidden');
+            });
+            document.getElementById('fc-next-btn').addEventListener('click', () => {
+                const filtered = getFilteredQuestions();
+                if (filtered.length === 0) return;
+                flashcardIndex = (flashcardIndex + 1) % filtered.length;
+                renderCurrentFlashcard();
+            });
+            document.getElementById('fc-prev-btn').addEventListener('click', () => {
+                const filtered = getFilteredQuestions();
+                if (filtered.length === 0) return;
+                flashcardIndex = (flashcardIndex - 1 + filtered.length) % filtered.length;
+                renderCurrentFlashcard();
+            });
+        });
+
+        // Filter Logic
+        function getFilteredQuestions() {
+            return questionsData.filter(q => {
+                const matchesCategory = (activeCategory === 'all') || 
+                                        (activeCategory === 'bookmarks' ? bookmarks.includes(q.id) : q.category === activeCategory);
+                const matchesSearch = searchQuery === '' || 
+                                      q.title.toLowerCase().includes(searchQuery) || 
+                                      q.summary.toLowerCase().includes(searchQuery) ||
+                                      q.articles.some(a => a.toLowerCase().includes(searchQuery)) ||
+                                      `вопрос ${q.id}`.includes(searchQuery);
+                return matchesCategory && matchesSearch;
+            });
+        }
+
+        // Section Introduction Text Updater
+        function updateSectionIntro() {
+            const introBox = document.getElementById('section-intro');
+            if (activeCategory === 'bookmarks') {
+                introBox.innerHTML = '<strong>⭐ Избранные вопросы:</strong> Сохраненный список вопросов для интенсивного повторения перед экзаменом.';
+            } else {
+                introBox.innerHTML = sectionIntros[activeCategory] || sectionIntros['all'];
+            }
+        }
+
+        // Main Render Questions
+        function renderQuestions() {
+            const container = document.getElementById('questions-list-container');
+            const filtered = getFilteredQuestions();
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+                        <span class="text-4xl block mb-2">🔍</span>
+                        <h3 class="text-base font-bold text-slate-800 mb-1">Ничего не найдено</h3>
+                        <p class="text-xs text-slate-500">Попробуйте изменить поисковый запрос или выбрать другой раздел.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(q => {
+                const isBookmarked = bookmarks.includes(q.id);
+                return `
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden" id="q-card-${q.id}">
+                        <!-- Card Header / Collapsible Trigger -->
+                        <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none bg-white hover:bg-slate-50/80 transition-colors" onclick="toggleAccordion(${q.id})">
+                            <div class="flex items-start space-x-3.5">
+                                <span class="px-2.5 py-1 bg-academic-100 text-academic-800 text-xs font-bold rounded-lg shrink-0 mt-0.5">
+                                    № ${q.id}
+                                </span>
+                                <div class="space-y-1">
+                                    <h3 class="text-base font-bold font-serif text-academic-900 leading-snug">
+                                        ${q.title}
+                                    </h3>
+                                    <div class="flex flex-wrap gap-1.5 items-center">
+                                        ${q.articles.map(art => `
+                                            <span class="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200/60 rounded text-[10px] font-semibold">
+                                                ${art}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between sm:justify-end space-x-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                                <button onclick="event.stopPropagation(); toggleBookmark(${q.id})" 
+                                    class="p-1.5 rounded-lg border text-xs font-medium transition-colors ${isBookmarked ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-amber-600'}"
+                                    title="${isBookmarked ? 'Убрать из избранного' : 'Добавить в избранное'}">
+                                    ${isBookmarked ? '⭐ В избранном' : '☆ В избранное'}
+                                </button>
+                                <span id="acc-icon-${q.id}" class="text-slate-400 text-sm font-bold transition-transform duration-200">
+                                    ▼
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Collapsible Body -->
+                        <div id="acc-body-${q.id}" class="hidden border-t border-slate-100 bg-slate-50/50 p-4 sm:p-6 text-xs sm:text-sm leading-relaxed text-slate-700">
+                            <!-- Intro Callout -->
+                            <div class="mb-4 p-3 bg-indigoAccent-50/80 border-l-4 border-indigoAccent-700 text-indigoAccent-900 rounded-r-lg text-xs italic">
+                                ${q.intro}
+                            </div>
+
+                            <!-- Executive Summary Box -->
+                            <div class="mb-4 p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl">
+                                <strong class="text-amber-900 text-xs uppercase tracking-wide block mb-1">📌 Краткая выжимка ответа:</strong>
+                                <p class="text-slate-800 font-medium">${q.summary}</p>
+                            </div>
+
+                            <!-- Deep Detail Analysis -->
+                            <div class="prose prose-slate max-w-none space-y-2">
+                                ${q.details}
+                            </div>
+
+                            <!-- Table rendering if applicable -->
+                            ${q.hasTable ? q.tableHtml : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Accordion Toggle Function
+        function toggleAccordion(id) {
+            const body = document.getElementById(`acc-body-${id}`);
+            const icon = document.getElementById(`acc-icon-${id}`);
+            if (!body) return;
+
+            if (body.classList.contains('hidden')) {
+                body.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                body.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Bookmark Toggle
+        function toggleBookmark(id) {
+            if (bookmarks.includes(id)) {
+                bookmarks = bookmarks.filter(bId => bId !== id);
+            } else {
+                bookmarks.push(id);
+            }
+            localStorage.setItem('civil_law_bookmarks', JSON.stringify(bookmarks));
+            updateBookmarkBadge();
+            renderQuestions();
+        }
+
+        function updateBookmarkBadge() {
+            document.getElementById('bookmark-count').textContent = bookmarks.length;
+        }
+
+        // Flashcards Mode Implementation
+        function startFlashcards() {
+            const filtered = getFilteredQuestions();
+            if (filtered.length === 0) {
+                alert('Нет вопросов для отображения в текущей выборке.');
+                return;
+            }
+            flashcardIndex = 0;
+            document.getElementById('questions-list-container').classList.add('hidden');
+            document.getElementById('flashcard-view').classList.remove('hidden');
+            renderCurrentFlashcard();
+        }
+
+        function exitFlashcards() {
+            document.getElementById('flashcard-view').classList.add('hidden');
+            document.getElementById('questions-list-container').classList.remove('hidden');
+        }
+
+        function renderCurrentFlashcard() {
+            const filtered = getFilteredQuestions();
+            if (filtered.length === 0) return;
+
+            const q = filtered[flashcardIndex];
+            document.getElementById('fc-progress').textContent = `Вопрос ${flashcardIndex + 1} из ${filtered.length}`;
+            document.getElementById('fc-category').textContent = getCategoryName(q.category);
+            document.getElementById('fc-num').textContent = `Вопрос № ${q.id}`;
+            document.getElementById('fc-title').textContent = q.title;
+            
+            document.getElementById('fc-answer-container').classList.add('hidden');
+            document.getElementById('fc-answer-text').innerHTML = `
+                <div class="mb-3 p-2 bg-amber-50 text-amber-900 text-xs font-bold rounded">
+                    📌 ${q.summary}
+                </div>
+                <div class="text-xs space-y-2">
+                    ${q.details}
+                </div>
+            `;
+        }
+
+        function getCategoryName(cat) {
+            switch(cat) {
+                case 'general': return 'Общая часть';
+                case 'property': return 'Вещное право';
+                case 'obligations': return 'Обязательства и договоры';
+                case 'torts_inheritance': return 'Деликты и наследование';
+                default: return 'Гражданское право';
+            }
+        }
+
+        // Chart.js Visualizations
+        function initCharts() {
+            // Chart 1: Institutional Questions Distribution Doughnut
+            const ctx1 = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Общая часть', 'Вещное право', 'Договоры', 'Деликты/Наследование'],
+                    datasets: [{
+                        data: [13, 3, 11, 3],
+                        backgroundColor: ['#312e81', '#f59e0b', '#4338ca', '#b45309'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 10, family: 'Inter' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${context.raw} вопросов`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Statistically Common Civil Deadlines Horizontal Bar Chart
+            const ctx2 = document.getElementById('deadlinesChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'Обмен товара (14д)',
+                        'Гибель/угроза (6мес)',
+                        'Наследство/Безвестн (6м/1г)',
+                        'Военный срок (2г)',
+                        'Исковая давность (3г)'
+                    ],
+                    datasets: [{
+                        label: 'Условный интервал (в месяцах)',
+                        data: [0.5, 6, 12, 24, 36],
+                        backgroundColor: '#4338ca',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Длительность: ~${context.raw} мес.`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 9 } }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { size: 9 } }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html> 
